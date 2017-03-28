@@ -59,7 +59,7 @@ def mylogin_required(function):
 
 def index(request):
     context = dict()
-    return render(request, 'main/home.html', context)
+    return render(request, 'main/index.html', context)
 
 # ----------------------------------------------------------------------------------------
 # NOTE: No register function needed, please remove
@@ -129,6 +129,17 @@ def view_data(model_name):
     context['fields'] = required_fields
     context['model_name'] = model_name
     return context
+
+def visualiseFeedback(request, course_id):
+    if request.method == "GET":
+        course = Course.objects.filter(pk=course_id)
+        if len(course)==0:
+            raise Http404
+        else:
+            course = course[0]
+            feedbacks = Feedback.objects.filter(course=course)
+            responses = [josn.loads(feedback.feedback) for feedback in feedbacks]
+            pdb.set_trace()
 
 
 def displayStu(request):

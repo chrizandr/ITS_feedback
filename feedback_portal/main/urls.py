@@ -37,6 +37,8 @@ urlpatterns = [
 
     url(r'^view/(?P<course_id>[0-9]+)$', views.viewFeedback, name='viewFeedback'),
 
+    url(r'^visualise/(?P<course_id>[0-9]+)$', views.visualiseFeedback, name='visualiseFeedback'),
+
     url(r'^api/mobile_login/$', views.mobile_login),
 
     url(r'^api/mobile_logout/$', views.mobile_logout),
