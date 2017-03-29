@@ -6,6 +6,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 from django.utils import timezone
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+
 
 class FileUpload(models.Model):
     CSVFile = models.FileField()
@@ -30,6 +33,9 @@ class Student(models.Model):
     class Meta:
         verbose_name_plural = 'Students'
 
+@receiver(post_delete, sender=Student)
+def auto_delete_user_info_with_student(sender, instance, **kwargs):
+    instance.user.delete()
 
 class Professor(models.Model):
     user = models.OneToOneField(User, primary_key=True, on_delete= models.CASCADE)
@@ -41,6 +47,10 @@ class Professor(models.Model):
     class Meta:
         verbose_name_plural = 'Professors'
 
+@receiver(post_delete, sender=Professor)
+def auto_delete_user_info_with_professor(sender, instance, **kwargs):
+    instance.user.delete()
+
 class Admin(models.Model):
     user = models.OneToOneField( User, primary_key=True, on_delete= models.CASCADE)
 
@@ -49,6 +59,10 @@ class Admin(models.Model):
 
     class Meta:
         verbose_name_plural = 'Feedback Portal Admins'
+
+@receiver(post_delete, sender=Admin)
+def auto_delete_user_info_with_admin(sender, instance, **kwargs):
+    instance.user.delete()
 
 class Course(models.Model):
     """

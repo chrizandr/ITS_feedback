@@ -16,7 +16,7 @@
 
 <div class="row">
     <div class="col-lg-12">
-        <h1 class="page-header">Table</h1>
+        <h1 class="page-header">Data</h1>
     </div>
     <!-- /.col-lg-12 -->
 </div>
@@ -34,22 +34,38 @@
                     <thead>
                         <tr>
                             <!-- TABLE HEADING HERE -->
+                            <th></th>
                             {% for each in fields %}
                             <th>{{each}}</th>
                             {% endfor%}
                         </tr>
                     </thead>
+                    <form action="/delete/" method="POST">{% csrf_token %}
+                      <button class="btn btn-link" type="submit">Delete All <i class="fa fa-trash" aria-hidden="true"></i></button>
+                      <input type="hidden" name="ModelName" value="{{model_name}}">
+                      <input type="hidden" name="DeleteAll" value="Yes">
+                    </form>
+                    <form action="/delete/" method="POST">{% csrf_token %}
+                      <button class="btn btn-link" type="submit">Delete <i class="fa fa-trash" aria-hidden="true"></i></button>
+                      <input type="hidden" name="ModelName" value="{{model_name}}">
                     <tbody>
                         <!-- TABLE BODY HERE -->
-                        {% for each in data %}
+                        {% for each, values in data.items %}
                         <tr>
-                            {% for item in each %}
+                            <td><input type="checkbox" name="Instancepk" value="{{each}}"></td>
+                            {% for item in values %}
                             <td>{{item}}</td>
                             {% endfor %}
+                          </input>
+                            <!--form name="deleteInstance" method="POST" action="">
+                                <input type="hidden" value="{{i.id}}" name="fileid"></input>
+                                <td><button class="btn btn-link" type="submit"><i class="fa fa-trash" aria-hidden="true"></i></button></td>
+                            </form-->
+
                         </tr>
                         {% endfor%}
-
                    </tbody>
+                   </form>
                </table>
                <!-- /.table-responsive -->
            </div>

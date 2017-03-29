@@ -35,6 +35,7 @@ from django.template.response import TemplateResponse
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.http import Http404
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 from .forms import *
@@ -142,17 +143,28 @@ def view_data(model_name, **kwargs):
         if not field.auto_created and str(field).split('.')[-1] not in unimp_fields:
             required_fields.append(field.name)
     data = model.objects.all()
-    required_data = list()
+    required_data = dict()
     for each in data:
         row_data = list()
         for field in required_fields:
-            row_data.append(getattr(each, field))  # Ignore PEP8Bear
-        required_data.append(row_data)
+            row_data.append(getattr(each, field))
+        required_data[ each.pk ] = row_data
     context['data'] = required_data
     context['fields'] = required_fields
     context['model_name'] = model_name
     return context
 
+def delete(request):
+    if request.method=='POST':
+        model = eval(request.POST['ModelName'])
+        print(request.POST)
+        if "DeleteAll" in request.POST:
+            print("yes")
+            model.objects.all().delete()
+        else:
+            Instancepk = request.POST.getlist('Instancepk')
+            model.objects.filter(pk__in=Instancepk).delete()
+    return render(request, 'main/home.html')
 
 def displayStu(request):
     return render(request, 'main/tables.html', view_data('Student', fields=['auth_token', 'auth_token_expiry']))
@@ -319,7 +331,7 @@ def addCourseStudent(request):
     else:
         form = FileForm()
         context['form'] = form
-        context['name'] = 'Course'
+        context['name'] = 'Course-Student relations'
         return render(request, 'main/upload.html', context)
 
 @mylogin_required
