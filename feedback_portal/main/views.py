@@ -466,8 +466,28 @@ def get_wordle(feedbacks):
                 word_list[word]['size'] += x['relevance']
             else:
                 word_list[word] = {'text': x['text'], 'size': x['relevance']}
+    counter = 0
+    minsize = 0
+    maxsize = 0
 
-    return word_list
+    for word in word_list:
+        size = word_list[word]
+        if counter<=0:
+            minsize = size
+            maxsize = size
+        else:
+            minsize = min(minsize, size)
+            maxsize = max(maxsize, size)
+
+    for word in word_list:
+        temp = (word_list[word]['size']-minsize)/(maxsize-minsize)
+        if temp<=0.9:
+            temp = temp + 0.1
+        temp = int(100.0*temp)
+        word_list[word]['size'] = temp
+
+    final_list = [word_list[word] for word in word_list]
+    return final_list
 
 
 def visualiseFeedback(request, f_id):
@@ -481,9 +501,12 @@ def visualiseFeedback(request, f_id):
             responses = [json.loads(feedback.feedback) for feedback in feedbacks]
             data = {}
             word_list = get_wordle(feedbacks)
+            #word_list = [{'text':'hell','size':100}, {'text':'mota','size':20}]
+            len_word_list = len(word_list)
             return render(
                 request, 'main/visualize.html',
-                context={'word_list': word_list})
+                {'word_list': json.dumps(word_list),
+                 'length_word_list':len_word_list})
 
 def serialize_datetime(obj):
     """JSON serializer for objects not serializable by default json code"""
