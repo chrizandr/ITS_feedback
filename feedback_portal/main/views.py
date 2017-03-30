@@ -197,12 +197,12 @@ def view_data(model_name, **kwargs):
                         row_data.append(getattr(each, field.name))  # Ignore PEP8Bear
                 if datetime.date.today() - each.end_date >= datetime.timedelta(days=1):
                     row_data.append("""<a href="{}">{}</a>""".format(
-                        "#",
+                        reverse('visualiseFeedback', args=[each.id]),
                         "<i class='fa fa-bar-chart-o fw'></i> <span>&nbsp</span> <span style='color:green'>Completed</span>"
                     ))
                 else:
                     row_data.append("""<a href="{}">{}</a>""".format(
-                        "#",
+                        reverse('visualiseFeedback', args=[each.id]),
                         "<i class='fa fa-clock-o fw'></i> <span>&nbsp</span> <span style='color:red'>Pending</span>"
                     ))
                 required_data.append(row_data)
@@ -454,17 +454,36 @@ def showFeedback(request, f_id):
             answers = [(x, feedback[x]) for x in feedback.keys()]
             return render(request, 'main/feedback.html', {"feedbacks" : answers, "fid" : f_id })
 
+def get_wordle(feedbacks):
+    word_list = {}
+    key_text = "Anything else you care to share or get off your chest?"
+    analyzed_text = [json.loads(feedback.analyzed_text)[key_text]['keywords'] for feedback in feedbacks]
+
+    for chunks in analyzed_text:
+        for x in chunks:
+            word = x['text']
+            if word in word_list:
+                word_list[word]['size'] += x['relevance']
+            else:
+                word_list[word] = {'text': x['text'], 'size': x['relevance']}
+
+    return word_list
+
+
 def visualiseFeedback(request, f_id):
     if request.method == "GET":
         req_object_list = RequestFeedback.objects.filter(id=f_id)
-        if len(req_object)==0:
+        if len(req_object_list)==0:
             raise Http404
         else:
             requested_fobject = req_object_list[0]
             feedbacks = Feedback.objects.filter(fid=requested_fobject)
             responses = [json.loads(feedback.feedback) for feedback in feedbacks]
             data = {}
-            return render(request, 'main/visualize.html', context=data)
+            word_list = get_wordle(feedbacks)
+            return render(
+                request, 'main/visualize.html',
+                context={'word_list': word_list})
 
 def serialize_datetime(obj):
     """JSON serializer for objects not serializable by default json code"""
